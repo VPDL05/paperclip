@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Value Calculator | Paperclip</title>
+    <meta name="description" content="Mathematically prove which pizza is the better deal. Compare sizes and prices to find the lowest cost per square inch.">
+    <style>
+        :root {
+            --primary: #ea580c; /* Pizza Orange */
+            --bg: #fff7ed;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 2rem 1rem; }
+
+        .nav { max-width: 800px; margin: 0 auto 2rem auto; }
+        .back-link { text-decoration: none; color: var(--text); font-weight: 600; display: flex; align-items: center; gap: 5px; font-size: 0.9rem; }
+        
+        .main-card {
+            background: var(--card-bg);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #fed7aa;
+        }
+
+        h1 { text-align: center; margin-bottom: 2rem; color: #9a3412; }
+
+        /* The Comparison Grid */
+        .pizza-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 600px) {
+            .pizza-grid { grid-template-columns: 1fr; gap: 1rem; }
+        }
+
+        .pizza-col {
+            padding: 1.5rem;
+            background: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        .pizza-col.winner { border-color: #22c55e; background-color: #f0fdf4; }
+        .pizza-col.loser { opacity: 0.6; }
+
+        h2 { font-size: 1.2rem; margin-bottom: 1rem; color: #4b5563; }
+
+        label { display: block; text-align: left; margin: 0.5rem 0 0.2rem; font-size: 0.9rem; font-weight: 600; }
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-display {
+            margin-top: 1rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .sq-inch { font-size: 0.9rem; font-weight: 400; color: #64748b; }
+
+        button {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 2rem;
+        }
+        button:hover { opacity: 0.9; }
+
+        .verdict {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #9a3412;
+            min-height: 1.6em;
+        }
+
+        /* SEO Content */
+        .content-shield { max-width: 800px; margin: 3rem auto; color: #64748b; line-height: 1.7; }
+        .content-shield h3 { color: var(--text); margin-top: 1.5rem; }
+    </style>
+</head>
+<body>
+
+    <div class="nav">
+        <a href="../index.html" class="back-link">&larr; Back to Tools</a>
+    </div>
+
+    <div class="main-card">
+        <h1>🍕 The Pizza Deal Finder</h1>
+
+        <div class="pizza-grid">
+            <div class="pizza-col" id="col1">
+                <h2>Pizza A (Small/Med)</h2>
+                <label>Diameter (inches)</label>
+                <input type="number" id="size1" placeholder="e.g. 12">
+                <label>Price ($)</label>
+                <input type="number" id="price1" placeholder="e.g. 14.99">
+                <div class="result-display" id="res1">--</div>
+                <div class="sq-inch">per sq inch</div>
+            </div>
+
+            <div class="pizza-col" id="col2">
+                <h2>Pizza B (Large/XL)</h2>
+                <label>Diameter (inches)</label>
+                <input type="number" id="size2" placeholder="e.g. 18">
+                <label>Price ($)</label>
+                <input type="number" id="price2" placeholder="e.g. 24.99">
+                <div class="result-display" id="res2">--</div>
+                <div class="sq-inch">per sq inch</div>
+            </div>
+        </div>
+
+        <div class="verdict" id="verdict"></div>
+
+        <button onclick="calculatePizza()">Compare Deals</button>
+    </div>
+
+    <article class="content-shield">
+        <h3>The Math Behind the Pizza</h3>
+        <p>Most people underestimate the size difference between pizzas because they judge by diameter (width). However, pizza is a circle, and the area of a circle is calculated using <code>A = πr²</code>.</p>
+        
+        <h3>Why the "Big" Pizza usually wins</h3>
+        <p>A standard 18-inch pizza has roughly <strong>254 square inches</strong> of food. A 12-inch pizza has only <strong>113 square inches</strong>. This means one 18-inch pizza is actually larger than <em>two</em> 12-inch pizzas combined! This calculator breaks down the "Price Per Square Inch" so you can see exactly where your money goes.</p>
+    </article>
+
+    <script>
+        function calculatePizza() {
+            // Get inputs
+            const s1 = parseFloat(document.getElementById('size1').value);
+            const p1 = parseFloat(document.getElementById('price1').value);
+            const s2 = parseFloat(document.getElementById('size2').value);
+            const p2 = parseFloat(document.getElementById('price2').value);
+
+            // Validation
+            if (isNaN(s1) || isNaN(p1) || isNaN(s2) || isNaN(p2)) {
+                document.getElementById('verdict').innerText = "Please fill in all fields!";
+                return;
+            }
+
+            // Area Formula: Pi * (diameter/2)^2
+            const area1 = Math.PI * Math.pow((s1/2), 2);
+            const area2 = Math.PI * Math.pow((s2/2), 2);
+
+            // Cost per sq inch
+            const cpsi1 = p1 / area1;
+            const cpsi2 = p2 / area2;
+
+            // Display raw numbers
+            document.getElementById('res1').innerText = "$" + cpsi1.toFixed(3);
+            document.getElementById('res2').innerText = "$" + cpsi2.toFixed(3);
+
+            // Determine Winner
+            const col1 = document.getElementById('col1');
+            const col2 = document.getElementById('col2');
+            const ver = document.getElementById('verdict');
+
+            // Reset styles
+            col1.classList.remove('winner', 'loser');
+            col2.classList.remove('winner', 'loser');
+
+            if (cpsi1 < cpsi2) {
+                // Pizza 1 Wins
+                col1.classList.add('winner');
+                col2.classList.add('loser');
+                const percent = Math.round(((cpsi2 - cpsi1) / cpsi2) * 100);
+                ver.innerText = `Pizza A is ${percent}% cheaper per bite!`;
+            } else if (cpsi2 < cpsi1) {
+                // Pizza 2 Wins
+                col2.classList.add('winner');
+                col1.classList.add('loser');
+                const percent = Math.round(((cpsi1 - cpsi2) / cpsi1) * 100);
+                ver.innerText = `Pizza B is ${percent}% cheaper per bite!`;
+            } else {
+                ver.innerText = "They are exactly the same value.";
+            }
+        }
+    </script>
+</body>
+</html>
