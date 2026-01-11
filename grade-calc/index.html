@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Grade Calculator | Paperclip</title>
+    <meta name="description" content="Calculate exactly what you need on your final exam to reach your target GPA. Free, private, and instant.">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 2rem 1rem; }
+
+        /* Navigation */
+        .nav { max-width: 600px; margin: 0 auto 2rem auto; }
+        .back-link { text-decoration: none; color: var(--text); font-weight: 600; display: flex; align-items: center; gap: 5px; font-size: 0.9rem; }
+        .back-link:hover { color: var(--primary); }
+
+        /* Calculator Card */
+        .calculator-card {
+            background: var(--card-bg);
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        h1 { margin-bottom: 1.5rem; font-size: 1.5rem; text-align: center; }
+
+        .input-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--primary); }
+
+        button {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+
+        /* Result Box */
+        .result-box {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #eff6ff;
+            border-radius: 8px;
+            text-align: center;
+            display: none; /* Hidden by default */
+            border: 1px solid #bfdbfe;
+        }
+        .result-box h2 { font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem; }
+        .result-box p { font-size: 0.9rem; color: #1e40af; }
+
+        /* Content Shield (SEO Text) */
+        .content-shield {
+            max-width: 600px;
+            margin: 3rem auto;
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        .content-shield h3 { color: var(--text); margin-top: 1.5rem; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+
+    <div class="nav">
+        <a href="../index.html" class="back-link">&larr; Back to Tools</a>
+    </div>
+
+    <div class="calculator-card">
+        <h1>Final Grade Calculator</h1>
+        
+        <div class="input-group">
+            <label>Current Grade (%)</label>
+            <input type="number" id="current" placeholder="e.g. 85">
+        </div>
+
+        <div class="input-group">
+            <label>Target Grade (%)</label>
+            <input type="number" id="target" placeholder="e.g. 90">
+        </div>
+
+        <div class="input-group">
+            <label>Final Exam Weight (%)</label>
+            <input type="number" id="weight" placeholder="e.g. 25">
+        </div>
+
+        <button onclick="calculate()">Calculate Required Score</button>
+
+        <div class="result-box" id="result">
+            <h2 id="score-display">--</h2>
+            <p id="message-display">You can do it!</p>
+        </div>
+    </div>
+
+    <article class="content-shield">
+        <h3>How does this calculator work?</h3>
+        <p>This tool uses a standard weighted average formula to determine the exact score needed on your final exam. It takes your current cumulative average, your desired final grade, and the percentage weight of the final exam.</p>
+        
+        <h3>The Math Behind It</h3>
+        <p>The formula used is: <code>(Target - (Current × (1 - Weight))) / Weight</code>. This ensures mathematical accuracy regardless of your grading scale.</p>
+
+        <h3>Why calculate your required grade?</h3>
+        <p>Knowing your target score helps reduce exam anxiety. Instead of aiming for "as high as possible," you have a concrete number to work toward. This helps in prioritizing study time across different subjects.</p>
+    </article>
+
+    <script>
+        function calculate() {
+            // 1. Get values
+            const current = parseFloat(document.getElementById('current').value);
+            const target = parseFloat(document.getElementById('target').value);
+            const weight = parseFloat(document.getElementById('weight').value) / 100;
+
+            // 2. Validate inputs
+            if (isNaN(current) || isNaN(target) || isNaN(weight)) {
+                alert("Please fill in all fields with numbers.");
+                return;
+            }
+
+            // 3. The Math
+            // Formula: Required = (Target - (Current * (1 - Weight))) / Weight
+            const required = (target - (current * (1 - weight))) / weight;
+
+            // 4. Display Results
+            const resultBox = document.getElementById('result');
+            const scoreDisplay = document.getElementById('score-display');
+            const msgDisplay = document.getElementById('message-display');
+
+            resultBox.style.display = 'block';
+            scoreDisplay.innerText = required.toFixed(1) + "%";
+
+            // 5. Dynamic Messages
+            if (required > 100) {
+                msgDisplay.innerText = "You need extra credit... it's mathematically impossible otherwise.";
+                msgDisplay.style.color = "#ef4444";
+            } else if (required <= 0) {
+                msgDisplay.innerText = "You're already safe! You can score 0% and still hit your target.";
+                msgDisplay.style.color = "#22c55e";
+            } else {
+                msgDisplay.innerText = "This is your target. Good luck!";
+                msgDisplay.style.color = "#1e40af";
+            }
+        }
+    </script>
+</body>
+</html>
