@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>True Cost Calculator | Paperclip</title>
+    <meta name="description" content="Stop impulse buying. Calculate how many hours of your life an item actually costs based on your real salary.">
+    <style>
+        :root {
+            --primary: #059669; /* Money Green */
+            --bg: #ecfdf5;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 2rem 1rem; }
+
+        .nav { max-width: 600px; margin: 0 auto 2rem auto; }
+        .back-link { text-decoration: none; color: var(--text); font-weight: 600; display: flex; align-items: center; gap: 5px; font-size: 0.9rem; }
+
+        .cost-card {
+            background: var(--card-bg);
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #a7f3d0;
+        }
+
+        h1 { text-align: center; margin-bottom: 2rem; color: #047857; }
+
+        .tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; justify-content: center; }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #e5e7eb;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            color: #64748b;
+            font-weight: 600;
+        }
+        .tab-btn.active { border-color: var(--primary); color: var(--primary); }
+
+        .input-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; }
+        
+        .currency-input { position: relative; }
+        .currency-input span { position: absolute; left: 12px; top: 13px; color: #64748b; }
+        input {
+            width: 100%;
+            padding: 0.8rem 0.8rem 0.8rem 2rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1.1rem;
+        }
+        input:focus { outline: none; border-color: var(--primary); }
+
+        button {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: transform 0.1s;
+        }
+        button:hover { opacity: 0.9; }
+
+        .result-box {
+            margin-top: 2.5rem;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+        }
+        .result-box.show { opacity: 1; transform: translateY(0); }
+        
+        .time-big { font-size: 2.5rem; font-weight: 800; color: var(--primary); line-height: 1.2; }
+        .time-label { font-size: 1rem; color: #64748b; margin-top: 0.5rem; }
+
+        .content-shield { max-width: 600px; margin: 3rem auto; color: #64748b; line-height: 1.7; }
+        .content-shield h3 { color: var(--text); margin-top: 1.5rem; }
+    </style>
+</head>
+<body>
+
+    <div class="nav">
+        <a href="../index.html" class="back-link">&larr; Back to Tools</a>
+    </div>
+
+    <div class="cost-card">
+        <h1>💸 Time Price Calculator</h1>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="setMode('hourly')" id="btn-hourly">Hourly Wage</button>
+            <button class="tab-btn" onclick="setMode('salary')" id="btn-salary">Annual Salary</button>
+        </div>
+
+        <div class="input-group">
+            <label id="income-label">Your Hourly Wage (After Tax)</label>
+            <div class="currency-input">
+                <span>$</span>
+                <input type="number" id="income" placeholder="e.g. 15">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Price of Item</label>
+            <div class="currency-input">
+                <span>$</span>
+                <input type="number" id="price" placeholder="e.g. 1000">
+            </div>
+        </div>
+
+        <button onclick="calculateTime()">Calculate True Cost</button>
+
+        <div class="result-box" id="result">
+            <div class="time-label">This item costs you:</div>
+            <div class="time-big" id="output">0 Hours</div>
+            <div class="time-label" id="life-text">of your life.</div>
+        </div>
+    </div>
+
+    <article class="content-shield">
+        <h3>What is the "Time Price"?</h3>
+        <p>We often look at price tags in terms of currency, but the real currency of life is time. This calculator uses your "Real Hourly Wage" to determine how long you have to sit at your desk or stand at your job to afford a purchase.</p>
+        
+        <h3>The Math</h3>
+        <p>If you input an annual salary, we divide it by <strong>2,080</strong> (the standard number of working hours in a year: 40 hours/week × 52 weeks). We then divide the item price by this hourly rate to give you the "Time Cost."</p>
+    </article>
+
+    <script>
+        let mode = 'hourly';
+
+        function setMode(m) {
+            mode = m;
+            document.getElementById('btn-hourly').className = m === 'hourly' ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('btn-salary').className = m === 'salary' ? 'tab-btn active' : 'tab-btn';
+            
+            const label = document.getElementById('income-label');
+            const input = document.getElementById('income');
+            
+            if (m === 'salary') {
+                label.innerText = "Your Annual Salary (After Tax)";
+                input.placeholder = "e.g. 50000";
+            } else {
+                label.innerText = "Your Hourly Wage (After Tax)";
+                input.placeholder = "e.g. 15";
+            }
+            document.getElementById('result').classList.remove('show');
+        }
+
+        function calculateTime() {
+            let income = parseFloat(document.getElementById('income').value);
+            const price = parseFloat(document.getElementById('price').value);
+
+            if (isNaN(income) || isNaN(price) || income === 0) {
+                alert("Please enter valid numbers.");
+                return;
+            }
+
+            // Convert Salary to Hourly if needed (Standard 2080 work hours/year)
+            if (mode === 'salary') {
+                income = income / 2080;
+            }
+
+            const totalHours = price / income;
+            
+            // Format Output
+            let displayString = "";
+            
+            if (totalHours < 1) {
+                const minutes = Math.round(totalHours * 60);
+                displayString = minutes + " Minutes";
+            } else {
+                const h = Math.floor(totalHours);
+                const m = Math.round((totalHours - h) * 60);
+                displayString = h + " Hrs " + m + " Mins";
+            }
+
+            document.getElementById('output').innerText = displayString;
+            document.getElementById('result').classList.add('show');
+        }
+    </script>
+</body>
+</html>
